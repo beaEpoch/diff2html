@@ -12,5 +12,7 @@
 jQuery设置折叠效果
 
 $(".diffmisc").click(function(){
+
   $(this).children("table").toggle();
+  
 });
