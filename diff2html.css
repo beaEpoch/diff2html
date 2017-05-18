@@ -1,0 +1,12 @@
+table.diff_exp_table { border:0px; border-collapse:collapse; width: 100%; font-size:0.75em; font-family: Lucida Console, monospace }
+th.difftablehead { background: black; color: white }
+tr.diffunmodified td { background: #D0D0E0 }
+tr.diffhunk td { background: #A0A0A0 }
+tr.diffadded td { background: #CCFFCC }
+tr.diffdeleted td { background: #FFCCCC }
+tr.diffchanged td { background: #FFFFA0 }
+tr.diffseparator td {}
+span.diffchanged2 { background: #E0C880 }
+span.diffponct { color: #B08080 }
+div.diffmisc td {color: #00008B}
+div.notemessage {font-weight: bold; color: #007799}
