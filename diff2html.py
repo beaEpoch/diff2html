@@ -28,6 +28,7 @@ hunk_off1, hunk_size1, hunk_off2, hunk_size2 = 0, 0, 0, 0
 # Characters we're willing to word wrap on
 WORDBREAK = " \t;.,/):-"
 
+
 def sane(x):
     r = ""
     for i in x:
@@ -37,6 +38,7 @@ def sane(x):
         else:
             r = r + i
     return r
+
 
 def linediff(s, t):
     '''
@@ -204,6 +206,11 @@ def add_collapsable(s, output_file):
     output_file.write(('<div class="diffmisc"><td colspan="4">%s</td>\n'%convert(s)).encode(encoding))
 
 
+def add_newfile(output_file):
+    output_file.write('<tr class="diffhunk"><td colspan="2">Null</td>')
+    output_file.write('<td colspan="2"><font color="#880000" float="right">New</font></td></tr>\n')
+
+
 def add_filename(output_file):
     output_file.write("<tr><th class='difftablehead' colspan='2'>修改前</th>")
     output_file.write("<th class='difftablehead' colspan='2'>修改后</th></tr>\n")
@@ -304,7 +311,8 @@ def parse_input(input_file, output_file, input_file_name, output_file_name,
     global line1, line2
     global hunk_off1, hunk_size1, hunk_off2, hunk_size2
     table_flag = False
-    filenum = 0
+    changefilenum = 0
+    newfilenum = 0
 
     while True:
         l = input_file.readline()
@@ -313,18 +321,28 @@ def parse_input(input_file, output_file, input_file_name, output_file_name,
             break
 
         m = re.match('^diff -ru\s+(\S+)\s+(\S+)', l)
-        if m:
-            filenum += 1
+        n = re.match('^Only in\s+(\S+):\s(\S+)', l)
+        if m or n:
             empty_buffer(output_file)
-            filename = m.group(2)
+            if m:
+                changefilenum += 1
+                filename = m.group(2)
+            if n:
+                newfilenum += 1
+                filename = '/'.join(n.groups())
             if table_flag:
                 output_file.write(('</table></div>').encode(encoding))
             else:
                 table_flag = True
-            add_collapsable(filename, filenum, output_file)
-            output_file.write(('<table class="diff_exp_table">').encode(encoding))
+            add_collapsable(filename, output_file)
+            output_file.write(('<table id="difftable%d" class="diff_exp_table">'%changefilenum).encode(encoding))
+            if n:
+                empty_buffer(output_file)
+                add_filename(output_file)
+                add_newfile(output_file)
             continue
 
+            
         m = re.match('^--- ([^\s]*)', l)
         if m:
             empty_buffer(output_file)
@@ -369,7 +387,9 @@ def parse_input(input_file, output_file, input_file_name, output_file_name,
 
     empty_buffer(output_file)
     output_file.write(('</table></div>').encode(encoding))
-    output_file.write(('<br /><div class="notemessage"><font color="#880000">NOTE:</font> %d File(s) Are Changed.</div>'%filenum).encode(encoding))
+    output_file.write(('<br /><div class="notemessage"><font color="#880000">NOTE:</font>').encode(encoding))
+    output_file.write(('<br />----%d File(s) Are Changed.\n'%changefilenum).encode(encoding))
+    output_file.write(('<br />----%d File(s) Are Added.</div>'%newfilenum).encode(encoding))
 
 def parse_from_memory(txt, show_hunk_infos):
     " Parses diff from memory and returns a string with html "
